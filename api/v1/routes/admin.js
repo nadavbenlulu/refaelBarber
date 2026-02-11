@@ -38,6 +38,7 @@ router.get('/logout', (req, res) => {
 
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
+        // שליפת תורים כולל השדה status
         const appointments = await Appointment.find().sort({ date: 1, time: 1 }).lean() || [];
         
         // מושך את כל החסימות (מתעלם מרשומת ההגדרות)
@@ -50,7 +51,7 @@ router.get('/dashboard', isAdmin, async (req, res) => {
         res.render('admin-dashboard', { 
             appointments, 
             availability,
-            workingHours, // שעות הפעילות שנשמרו ב-DB
+            workingHours, 
             layout: 'main'
         });
     } catch (err) {
@@ -59,7 +60,18 @@ router.get('/dashboard', isAdmin, async (req, res) => {
     }
 });
 
-// עדכון שעות פתיחה וסגירה קבועות (שומר ב-DB במקום ב-let)
+// אישור תור (חדש!) - משנה סטטוס ל-confirmed
+router.post('/confirm-appointment/:id', isAdmin, async (req, res) => {
+    try {
+        await Appointment.findByIdAndUpdate(req.params.id, { status: 'confirmed' });
+        res.redirect('/admin/dashboard');
+    } catch (err) {
+        console.error("Confirm Appointment Error:", err);
+        res.status(500).send("שגיאה באישור התור");
+    }
+});
+
+// עדכון שעות פתיחה וסגירה קבועות
 router.post('/update-working-hours', isAdmin, async (req, res) => {
     const { openTime, closeTime } = req.body;
     try {

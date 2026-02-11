@@ -7,7 +7,6 @@
     <div class="row g-4">
         {{!-- עמודה ימנית: ניהול זמנים --}}
         <div class="col-lg-4">
-            
             {{!-- הגדרת שעות פעילות קבועות --}}
             <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
                 <div class="card-header bg-secondary text-white p-3" style="border-radius: 15px 15px 0 0;">
@@ -27,19 +26,15 @@
                         </div>
                         <button type="submit" class="btn btn-dark w-100 fw-bold btn-sm">עדכן שעות קבועות</button>
                     </form>
-                    <div class="mt-2 small text-muted text-center">
-                        * השעות שיופיעו ללקוחות בבחירת תור
-                    </div>
                 </div>
             </div>
 
             {{!-- חסימת טווח שעות או יום שלם --}}
             <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
                 <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
-                    <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> חסימת זמנים (חופשות/הפסקות)</h5>
+                    <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> חסימת זמנים</h5>
                 </div>
                 <div class="card-body p-4">
-                    {{!-- חסימת יום שלם --}}
                     <form action="/admin/toggle-day" method="POST" class="mb-4">
                         <label class="form-label fw-bold">חסימת יום שלם:</label>
                         <div class="input-group">
@@ -47,55 +42,16 @@
                             <button type="submit" class="btn btn-primary fw-bold" style="background-color: #c5a059; border: none;">עדכן יום</button>
                         </div>
                     </form>
-                    
                     <hr>
-
-                    {{!-- חסימת טווח שעות --}}
-                    <form action="/admin/block-range" method="POST" class="mt-4">
+                    <form action="/admin/block-range" method="POST">
                         <label class="form-label fw-bold">חסימת טווח שעות:</label>
                         <input type="date" name="date" class="form-control mb-2" required>
                         <div class="row g-2 mb-3">
-                            <div class="col">
-                                <input type="time" name="startTime" class="form-control" title="משעה" required>
-                            </div>
-                            <div class="col">
-                                <input type="time" name="endTime" class="form-control" title="עד שעה" required>
-                            </div>
+                            <div class="col"><input type="time" name="startTime" class="form-control" required></div>
+                            <div class="col"><input type="time" name="endTime" class="form-control" required></div>
                         </div>
                         <button type="submit" class="btn btn-outline-dark w-100 fw-bold">חסום טווח שעות</button>
                     </form>
-                </div>
-            </div>
-
-            {{!-- חסימות פעילות --}}
-            <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                <div class="card-header bg-light p-3" style="border-radius: 15px 15px 0 0;">
-                    <h6 class="fw-bold m-0 text-dark">חסימות פעילות:</h6>
-                </div>
-                <div class="card-body p-0">
-                    <div class="overflow-auto" style="max-height: 250px;">
-                        <ul class="list-group list-group-flush">
-                            {{#each availability}}
-                                <li class="list-group-item p-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold text-dark">{{this.date}}</span>
-                                        {{#if this.isClosed}}
-                                            <span class="badge bg-danger">יום סגור</span>
-                                        {{/if}}
-                                    </div>
-                                    {{#if this.closedSlots}}
-                                        <div class="d-flex flex-wrap gap-1 mt-2">
-                                            {{#each this.closedSlots}}
-                                                <span class="badge bg-light text-dark border small">{{this}}</span>
-                                            {{/each}}
-                                        </div>
-                                    {{/if}}
-                                </li>
-                            {{else}}
-                                <li class="list-group-item text-muted text-center p-4">אין חסימות פעילות</li>
-                            {{/each}}
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -108,52 +64,62 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th class="p-3">לקוח</th>
-                                    <th class="p-3">שירות</th> 
-                                    <th class="p-3">תאריך ושעה</th>
+                                    <th class="p-3">שירות וסטטוס</th> 
+                                    <th class="p-3">זמן</th>
                                     <th class="p-3 text-center">פעולות</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {{#each appointments}}
-                                <tr>
+                                <tr style="{{#if (eq this.status 'pending')}}background-color: #fff9e6;{{/if}}">
                                     <td class="p-3">
                                         <div class="fw-bold text-dark">{{this.clientName}}</div>
                                         <small class="text-muted">{{this.clientPhone}}</small>
                                     </td>
                                     <td class="p-3">
-                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
-                                            {{this.service}}
-                                        </span>
+                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2 mb-1 d-block">{{this.service}}</span>
+                                        {{#if (eq this.status 'pending')}}
+                                            <span class="badge bg-secondary small w-100">ממתין לאישור</span>
+                                        {{else}}
+                                            <span class="badge bg-success small w-100">מאושר ✅</span>
+                                        {{/if}}
                                     </td>
                                     <td class="p-3">
-                                        <div class="badge bg-light text-dark border p-2 mb-1 d-block" style="width: fit-content;">
-                                            <i class="bi bi-calendar3"></i> {{this.date}}
-                                        </div>
-                                        <div class="badge bg-dark text-white p-2 d-block" style="width: fit-content;">
-                                            <i class="bi bi-clock"></i> {{this.time}}
-                                        </div>
+                                        <div class="small text-dark border-bottom pb-1 mb-1"><i class="bi bi-calendar3"></i> {{this.date}}</div>
+                                        <div class="fw-bold text-dark"><i class="bi bi-clock"></i> {{this.time}}</div>
                                     </td>
                                     <td class="p-3 text-center">
                                         <div class="d-flex flex-column gap-2">
-                                            <div class="d-flex gap-2 justify-content-center">
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                {{!-- כפתור אישור במערכת - מופיע רק אם התור בסטטוס pending --}}
+                                                {{#if (eq this.status 'pending')}}
+                                                <form action="/admin/confirm-appointment/{{this._id}}" method="POST" style="display:inline;">
+                                                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-2" title="אשר במערכת">
+                                                        <i class="bi bi-check-lg"></i> אישור
+                                                    </button>
+                                                </form>
+                                                {{/if}}
+                                                
                                                 <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'approve')" 
-                                                        class="btn btn-success btn-sm rounded-pill px-3">
-                                                    <i class="bi bi-whatsapp"></i> אישור
-                                                </button>
-                                                <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'cancel')" 
-                                                        class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                                    <i class="bi bi-x-circle"></i> ביטול
+                                                        class="btn btn-outline-success btn-sm rounded-pill px-2">
+                                                    <i class="bi bi-whatsapp"></i> וואטסאפ
                                                 </button>
                                             </div>
-                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם למחוק סופית את התור?')">
-                                                <button type="submit" class="btn btn-dark btn-sm rounded-pill w-100">
-                                                    <i class="bi bi-trash"></i> סיום ומחיקה
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'cancel')" 
+                                                        class="btn btn-outline-danger btn-sm rounded-pill px-2">
+                                                    <i class="bi bi-x-circle"></i> ביטול
                                                 </button>
-                                            </form>
+                                                <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם למחוק סופית?')">
+                                                    <button type="submit" class="btn btn-dark btn-sm rounded-pill px-2">
+                                                        <i class="bi bi-trash"></i> מחק
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
