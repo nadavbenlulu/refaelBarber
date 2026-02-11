@@ -4,13 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Refael Cohen Barbershop - רפאל כהן מעצב שיער">
-    <meta property="og:description" content="קביעת תורים אונליין למספרת רפאל כהן באשדוד. רוגוזין 24, אשדוד.">
-    <meta property="og:image" content="/uploads/pics/bar.jpeg">
-    <meta name="theme-color" content="#1a1a1a">
-
-    <title>Refael Cohen Barbershop | רפאל כהן מעצב שיער</title>
+    <title>Refael Cohen | הזמנת תור</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -19,85 +13,68 @@
       :root {
         --barber-black: #1a1a1a; 
         --barber-gold: #c5a059;
-        --barber-light: #f8f9fa;
       }
 
       body {
-        background-color: var(--barber-light);
+        background-color: #f4f4f4; /* רקע בהיר כמו בתמונה */
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      /* Navbar נקייה לחלוטין - רק לוגו */
-      .navbar {
-        border-bottom: 2px solid var(--barber-gold);
-        background-color: var(--barber-black) !important;
-        padding: 15px 0;
-      }
-      .navbar-brand {
-        color: white !important;
-        font-size: 1.6rem;
-        width: 100%;
-        text-align: center;
         margin: 0;
+        padding: 0;
       }
 
-      /* Hero עם דגש על פרטי קשר וכתובת */
-      .hero-section {
-        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/uploads/pics/bar.jpeg');
-        background-size: cover;
-        background-position: center;
+      /* הפס השחור למעלה */
+      .top-header {
+        background-color: var(--barber-black);
         color: white;
-        padding: 50px 0;
+        padding: 15px 0;
         text-align: center;
-        border-bottom: 4px solid var(--barber-gold);
+        border-bottom: 3px solid var(--barber-gold);
       }
 
-      .hero-section h1 {
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
-        font-size: 2.2rem;
+      .top-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
         font-weight: bold;
+        letter-spacing: 1px;
       }
 
-      .info-badge {
-        background: rgba(197, 160, 89, 0.15);
-        border: 1px solid var(--barber-gold);
-        color: white;
-        padding: 8px 18px;
-        border-radius: 50px;
-        display: inline-block;
-        margin: 5px;
-        text-decoration: none;
-        font-weight: 500;
+      /* מיכל הטופס הלבן */
+      .main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
       }
 
-      /* כפתור הוואטסאפ הירוק */
-      #ai-assistant-bubble {
+      .form-card {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 800px;
+      }
+
+      /* כפתור הוואטסאפ הירוק בצד */
+      #whatsapp-bubble {
         position: fixed;
-        bottom: 25px;
-        left: 25px; 
+        bottom: 30px;
+        right: 30px; /* צד ימין לפי התמונה */
         width: 60px;
         height: 60px;
         background-color: #25d366;
         border-radius: 50%;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
-        transition: transform 0.3s ease;
+        z-index: 1000;
+        transition: transform 0.3s;
       }
 
-      #ai-assistant-bubble:hover {
+      #whatsapp-bubble:hover {
         transform: scale(1.1);
-      }
-
-      .footer-info {
-        background-color: var(--barber-black);
-        color: white;
-        padding: 30px 0;
-        margin-top: 50px;
-        text-align: center;
-        border-top: 3px solid var(--barber-gold);
       }
 
       .text-gold {
@@ -107,44 +84,20 @@
   </head>
   <body>
 
-  <nav class="navbar sticky-top shadow-sm">
-    <div class="container justify-content-center">
-      <a class="navbar-brand fw-bold" href="/">
-        <i class="bi bi-scissors text-gold"></i> REFAEL COHEN
-      </a>
-    </div>
-  </nav>
-
-  <div class="hero-section mb-4">
-    <div class="container">
-      <h1 class="text-uppercase mb-3">Refael Cohen Barbershop</h1>
-      <p class="lead mb-4">עיצוב שיער וזקן | רמה אחת מעל כולם</p>
-      
-      <div class="d-flex flex-wrap justify-content-center">
-          <a href="tel:0506764652" class="info-badge">
-             <i class="bi bi-telephone-fill text-gold"></i> 050-6764652
-          </a>
-          <div class="info-badge">
-             <i class="bi bi-geo-alt-fill text-gold"></i> רוגוזין 24, אשדוד
-          </div>
+  <header class="top-header">
+      <div class="container">
+          <h2>REFAEL COHEN <i class="bi bi-scissors text-gold"></i></h2>
       </div>
-    </div>
-  </div>
+  </header>
 
-  <main class="container py-2">
-    {{{body}}}
+  <main class="main-container">
+      <div class="form-card">
+          {{{body}}}
+      </div>
   </main>
 
-  <footer class="footer-info">
-    <div class="container">
-        <h6 class="fw-bold mb-2">רפאל כהן - מעצב שיער</h6>
-        <p class="small mb-1">רוגוזין 24, אשדוד</p>
-        <p class="small mb-0">© 2026 כל הזכויות שמורות</p>
-    </div>
-  </footer>
-
-  <a href="https://wa.me/972506764652" target="_blank" id="ai-assistant-bubble">
-      <i class="bi bi-whatsapp text-white fs-2"></i>
+  <a href="https://wa.me/972506764652" target="_blank" id="whatsapp-bubble">
+      <i class="bi bi-whatsapp text-white fs-1"></i>
   </a>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
