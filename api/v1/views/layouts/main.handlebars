@@ -27,92 +27,74 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
 
+      /* Navbar נקייה לחלוטין - רק לוגו */
       .navbar {
-        border-bottom: 3px solid var(--barber-gold);
+        border-bottom: 2px solid var(--barber-gold);
         background-color: var(--barber-black) !important;
+        padding: 15px 0;
       }
-      .navbar-brand, .nav-link {
+      .navbar-brand {
         color: white !important;
-      }
-      .navbar-brand:hover, .nav-link:hover {
-        color: var(--barber-gold) !important;
+        font-size: 1.6rem;
+        width: 100%;
+        text-align: center;
+        margin: 0;
       }
 
-      /* Hero משודרג עם תמונת רקע */
+      /* Hero עם דגש על פרטי קשר וכתובת */
       .hero-section {
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/uploads/pics/bar.jpeg');
         background-size: cover;
         background-position: center;
         color: white;
-        padding: 80px 0;
+        padding: 50px 0;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         border-bottom: 4px solid var(--barber-gold);
       }
 
       .hero-section h1 {
         text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
-      }
-
-      .btn-gold {
-        background-color: var(--barber-gold);
-        color: white;
-        border: none;
-        padding: 10px 25px;
+        font-size: 2.2rem;
         font-weight: bold;
-        transition: 0.3s;
-      }
-      .btn-gold:hover {
-        background-color: #b38f4d;
-        color: white;
-        transform: translateY(-2px);
       }
 
+      .info-badge {
+        background: rgba(197, 160, 89, 0.15);
+        border: 1px solid var(--barber-gold);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 50px;
+        display: inline-block;
+        margin: 5px;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      /* כפתור הוואטסאפ הירוק */
       #ai-assistant-bubble {
         position: fixed;
-        bottom: 30px;
-        left: 30px; 
-        width: 65px;
-        height: 65px;
+        bottom: 25px;
+        left: 25px; 
+        width: 60px;
+        height: 60px;
         background-color: #25d366;
         border-radius: 50%;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9999;
-        transition: all 0.3s ease;
-        text-decoration: none;
+        transition: transform 0.3s ease;
       }
 
       #ai-assistant-bubble:hover {
         transform: scale(1.1);
       }
 
-      .ai-label {
-        position: absolute;
-        right: 75px;
-        background: var(--barber-black);
-        color: white;
-        padding: 6px 15px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: bold;
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.3s;
-        pointer-events: none;
-      }
-
-      #ai-assistant-bubble:hover .ai-label {
-        opacity: 1;
-      }
-
       .footer-info {
         background-color: var(--barber-black);
         color: white;
-        padding: 20px 0;
+        padding: 30px 0;
         margin-top: 50px;
         text-align: center;
         border-top: 3px solid var(--barber-gold);
@@ -125,55 +107,43 @@
   </head>
   <body>
 
-  <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
-    <div class="container">
+  <nav class="navbar sticky-top shadow-sm">
+    <div class="container justify-content-center">
       <a class="navbar-brand fw-bold" href="/">
         <i class="bi bi-scissors text-gold"></i> REFAEL COHEN
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
-      </button>
-      
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-medium">
-          <li class="nav-item"><a class="nav-link" href="/">דף הבית</a></li>
-          <li class="nav-item"><a class="nav-link" href="tel:0506764652">חייג אלינו</a></li>
-        </ul>
-
-        <div class="d-flex align-items-center gap-3 ms-lg-4">
-          <span class="text-white d-none d-lg-inline">
-             <i class="bi bi-geo-alt-fill text-gold"></i> רוגוזין 24, אשדוד
-          </span>
-        </div>
-      </div>
     </div>
   </nav>
 
-  <div class="hero-section mb-5">
+  <div class="hero-section mb-4">
     <div class="container">
-      <h1 class="display-5 fw-bold text-uppercase" style="letter-spacing: 2px;">Refael Cohen Barbershop</h1>
-      <p class="lead">רפאל כהן - מעצב שיער | רמה אחת מעל כולם</p>
-      <div class="mt-3">
-          <span class="badge bg-dark border border-secondary p-2">
-             <i class="bi bi-telephone"></i> 050-6764652
-          </span>
+      <h1 class="text-uppercase mb-3">Refael Cohen Barbershop</h1>
+      <p class="lead mb-4">עיצוב שיער וזקן | רמה אחת מעל כולם</p>
+      
+      <div class="d-flex flex-wrap justify-content-center">
+          <a href="tel:0506764652" class="info-badge">
+             <i class="bi bi-telephone-fill text-gold"></i> 050-6764652
+          </a>
+          <div class="info-badge">
+             <i class="bi bi-geo-alt-fill text-gold"></i> רוגוזין 24, אשדוד
+          </div>
       </div>
     </div>
   </div>
 
-  <main class="container py-4">
+  <main class="container py-2">
     {{{body}}}
   </main>
 
   <footer class="footer-info">
     <div class="container">
-        <p class="mb-1">© 2026 Refael Cohen Barbershop</p>
-        <p class="small text-muted">רחוב רוגוזין 24, אשדוד | טלפון: 050-6764652</p>
+        <h6 class="fw-bold mb-2">רפאל כהן - מעצב שיער</h6>
+        <p class="small mb-1">רוגוזין 24, אשדוד</p>
+        <p class="small mb-0">© 2026 כל הזכויות שמורות</p>
     </div>
   </footer>
 
   <a href="https://wa.me/972506764652" target="_blank" id="ai-assistant-bubble">
-      <span class="ai-label">שלח הודעה לרפאל</span>
       <i class="bi bi-whatsapp text-white fs-2"></i>
   </a>
 
