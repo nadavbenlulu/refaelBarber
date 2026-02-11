@@ -6,18 +6,24 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const hbs = require('express-handlebars');
 const path = require('path');
-const session = require('express-session'); // ייבוא הסשן
+const session = require('express-session');
 
 // ייבוא הראוטרים
 const appointmentRouter = require('./api/v1/routes/appointment');
 const adminRouter = require('./api/v1/routes/admin');
 
-// הגדרת מנוע התצוגה Handlebars
+// הגדרת מנוע התצוגה Handlebars עם ה-Helper שחסר (eq)
 app.set('views', path.join(__dirname, 'api/v1/views'));
 app.engine('handlebars', hbs.engine({
     layoutsDir: path.join(__dirname, 'api/v1/views/layouts'),
     partialsDir: path.join(__dirname, 'api/v1/views/partials'),
-    defaultLayout: 'main'
+    defaultLayout: 'main',
+    // --- כאן הוספנו את הפונקציה החסרה ---
+    helpers: {
+        eq: function (v1, v2) {
+            return v1 === v2;
+        }
+    }
 }));
 app.set('view engine', 'handlebars');
 
@@ -27,14 +33,14 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// הגדרת סשן (חובה בשביל ה-Login של רפאל)
+// הגדרת סשן
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'refael_barber_secret_key', // מפתח הצפנה
+    secret: process.env.SESSION_SECRET || 'refael_barber_secret_key',
     resave: false,
-    saveUninitialized: false, // לא שומר סשן ריק
+    saveUninitialized: false,
     cookie: { 
-        maxAge: 1000 * 60 * 60 * 24, // הסשן תקף ל-24 שעות
-        secure: false // במצב פיתוח (HTTP) נשאיר false
+        maxAge: 1000 * 60 * 60 * 24,
+        secure: false 
     }
 }));
 
@@ -44,12 +50,10 @@ app.use('/uploads', express.static('uploads'));
 
 // --- Routes ---
 
-// דף הבית
 app.get('/', (req, res) => {
     res.render('index', { title: 'קביעת תור לרפאל כהן' }); 
 });
 
-// ראוטרים לפעולות המערכת
 app.use('/appointments', appointmentRouter);
 app.use('/admin', adminRouter);
 
