@@ -6,32 +6,83 @@
 
     <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
                 <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
                     <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> ניהול חופשות וסגירות</h5>
                 </div>
                 <div class="card-body p-4">
                     <form action="/admin/toggle-day" method="POST" class="mb-4">
-                        <label class="form-label fw-bold">בחר יום לחסימה או פתיחה:</label>
-                        <input type="date" name="date" class="form-control form-control-lg mb-3" required>
+                        <label class="form-label fw-bold">חסימת/פתיחת יום שלם:</label>
+                        <input type="date" name="date" class="form-control mb-2" required>
                         <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #c5a059; border: none;">
                             עדכן מצב יום
                         </button>
                     </form>
                     
                     <hr>
-                    <h6 class="fw-bold mb-3">ימים חסומים כרגע:</h6>
-                    <div class="overflow-auto" style="max-height: 200px;">
+
+                    <form action="/admin/toggle-slot" method="POST" class="mb-2">
+                        <label class="form-label fw-bold">חסימת שעה ספציפית:</label>
+                        <input type="date" name="date" class="form-control mb-2" required>
+                        <select name="time" class="form-select mb-2" required>
+                            <option value="" selected disabled>בחר שעה...</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                            <option value="19:30">19:30</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-dark w-100 fw-bold">
+                            חסום/פתח שעה
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-secondary text-white p-3" style="border-radius: 15px 15px 0 0;">
+                    <h6 class="fw-bold m-0">חסימות פעילות:</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="overflow-auto" style="max-height: 300px;">
                         <ul class="list-group list-group-flush">
                             {{#each availability}}
-                                {{#if isClosed}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center text-danger fw-bold">
-                                        <span><i class="bi bi-lock-fill"></i> {{this.date}}</span>
-                                        <span class="badge bg-danger">סגור</span>
-                                    </li>
-                                {{/if}}
+                                <li class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">{{this.date}}</span>
+                                        {{#if this.isClosed}}
+                                            <span class="badge bg-danger">יום סגור</span>
+                                        {{/if}}
+                                    </div>
+                                    {{#if this.closedSlots}}
+                                        <div class="d-flex flex-wrap gap-1 mt-2">
+                                            {{#each this.closedSlots}}
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-clock"></i> {{this}}
+                                                </span>
+                                            {{/each}}
+                                        </div>
+                                    {{/if}}
+                                </li>
                             {{else}}
-                                <li class="list-group-item text-muted text-center">אין ימים חסומים</li>
+                                <li class="list-group-item text-muted text-center p-4">אין חסימות פעילות</li>
                             {{/each}}
                         </ul>
                     </div>
@@ -50,7 +101,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="p-3">לקוח</th>
-                                    <th class="p-3">שירות</th> <th class="p-3">תאריך ושעה</th>
+                                    <th class="p-3">שירות</th> 
+                                    <th class="p-3">תאריך ושעה</th>
                                     <th class="p-3 text-center">פעולות</th>
                                 </tr>
                             </thead>
@@ -75,14 +127,21 @@
                                         </div>
                                     </td>
                                     <td class="p-3 text-center">
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            <a href="https://wa.me/972{{this.clientPhone}}" target="_blank" class="btn btn-success btn-sm rounded-pill px-3" title="שלח הודעה">
-                                                <i class="bi bi-whatsapp"></i>
-                                            </a>
-                                            
-                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם סיימת את הטיפול או שברצונך למחוק את התור?')">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                                    <i class="bi bi-trash"></i> סיום
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'approve')" 
+                                                        class="btn btn-success btn-sm rounded-pill px-3" title="שלח אישור">
+                                                    <i class="bi bi-whatsapp"></i> אישור
+                                                </button>
+                                                <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'cancel')" 
+                                                        class="btn btn-outline-danger btn-sm rounded-pill px-3" title="שלח הודעת ביטול">
+                                                    <i class="bi bi-x-circle"></i> הודעת ביטול
+                                                </button>
+                                            </div>
+
+                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם סיימת את הטיפול או שברצונך למחוק את התור מהיומן?')">
+                                                <button type="submit" class="btn btn-dark btn-sm rounded-pill w-100">
+                                                    <i class="bi bi-trash"></i> סיום ומחיקה
                                                 </button>
                                             </form>
                                         </div>
@@ -90,7 +149,8 @@
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="4" class="text-center p-5 text-muted"> <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
+                                    <td colspan="4" class="text-center p-5 text-muted"> 
+                                        <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
                                         אין תורים מוזמנים כרגע
                                     </td>
                                 </tr>
@@ -103,3 +163,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    function sendWhatsApp(phone, name, service, date, time, type) {
+        const cleanPhone = phone.replace(/\D/g, '');
+        const finalPhone = cleanPhone.startsWith('0') ? '972' + cleanPhone.substring(1) : cleanPhone;
+        
+        let message = "";
+        
+        if (type === 'approve') {
+            message = `היי ${name}, זה רפאל כהן. אני מאשר את התור שלך ל${service} בתאריך ${date} בשעה ${time}. נתראה!`;
+        } else if (type === 'cancel') {
+            message = `היי ${name}, זה רפאל כהן. לצערי אני נאלץ לבטל את התור ל${service} בתאריך ${date} בשעה ${time}. אשמח שנתאם מועד חדש, סליחה על אי הנוחות.`;
+        }
+        
+        const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    }
+</script>
