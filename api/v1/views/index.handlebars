@@ -1,0 +1,182 @@
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-4 order-lg-1">
+            <div class="card border-0 shadow-sm p-4 text-center h-100" style="border-radius: 20px; background: white; border-top: 5px solid #c5a059 !important;">
+                <div class="mb-3 position-relative">
+                    <div class="mx-auto" style="width: 140px; height: 140px; border-radius: 50%; border: 4px solid #c5a059; overflow: hidden; background-color: #f8f9fa;">
+                        <img src="/uploads/pics/bar.jpeg" alt="רפאל כהן" id="agentImage" 
+                             onerror="this.src='https://via.placeholder.com/140?text=Refael+Cohen'"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-1" style="color: #1a1a1a;">רפאל כהן</h4>
+                <p class="fw-medium mb-3" style="color: #c5a059;">מעצב שיער מומחה</p>
+                
+                <hr class="my-3 opacity-10">
+                
+                <div class="text-end mb-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-light p-2 rounded-circle"><i class="bi bi-whatsapp text-success fs-5"></i></div>
+                        <a href="https://wa.me/972506764652" target="_blank" class="text-decoration-none text-dark fw-semibold" dir="ltr">050-6764652</a>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-light p-2 rounded-circle"><i class="bi bi-geo-alt text-primary fs-5"></i></div>
+                        <span class="text-dark fw-semibold">רוגוזין 24, אשדוד</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-light p-2 rounded-circle"><i class="bi bi-clock text-warning fs-5"></i></div>
+                        <span class="text-dark fw-semibold">שעות פעילות: 09:00 - 21:00</span>
+                    </div>
+                </div>
+
+                <a href="/admin/dashboard" class="btn btn-outline-secondary w-100 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-lock"></i> כניסת מנהל
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-8 order-lg-2">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background: white;">
+                <div class="card-body">
+                    <h2 class="fw-bold mb-4 text-center" style="color: #1a1a1a;">הזמנת תור לרפאל כהן</h2>
+                    
+                    <form id="appointmentForm" class="row g-3">
+                        <div class="col-md-6 text-end">
+                            <label class="form-label fw-bold">שם מלא</label>
+                            <input type="text" id="clientName" class="form-control form-control-lg shadow-sm" placeholder="הכנס שם..." required>
+                        </div>
+                        
+                        <div class="col-md-6 text-end">
+                            <label class="form-label fw-bold">מספר טלפון</label>
+                            <input type="tel" id="clientPhone" class="form-control form-control-lg shadow-sm" placeholder="05x-xxxxxxx" required>
+                        </div>
+
+                        <div class="col-md-12 text-end">
+                            <label class="form-label fw-bold text-primary">בחר סוג שירות</label>
+                            <select id="service" class="form-select form-select-lg shadow-sm" required style="border-right: 5px solid #c5a059;">
+                                <option value="" disabled selected>מה עושים היום?</option>
+                                <option value="תספורת גבר">תספורת גבר</option>
+                                <option value="עיצוב זקן">עיצוב זקן</option>
+                                <option value="תספורת + זקן">תספורת + זקן</option>
+                                <option value="תספורת ילד">תספורת ילד</option>
+                                <option value="טיפול פנים / צבע">טיפול פנים / צבע</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 text-end">
+                            <label class="form-label fw-bold">בחר יום</label>
+                            <input type="date" id="appointmentDate" class="form-control form-control-lg shadow-sm" required>
+                        </div>
+
+                        <div class="col-md-6 text-end">
+                            <label class="form-label fw-bold">בחר שעה</label>
+                            <select id="appointmentTime" class="form-select form-select-lg shadow-sm" required disabled>
+                                <option value="">בחר קודם תאריך...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="background-color: #1a1a1a; border: 2px solid #c5a059; border-radius: 10px;">
+                                <i class="bi bi-calendar-check"></i> קבע לי תור
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="responseMsg" class="mt-4 d-none animate__animated animate__fadeIn">
+                        <div class="alert p-3 rounded text-center fw-bold"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dateInput = document.getElementById('appointmentDate');
+    const timeSelect = document.getElementById('appointmentTime');
+    const serviceSelect = document.getElementById('service');
+    const form = document.getElementById('appointmentForm');
+
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+
+    dateInput.addEventListener('change', async () => {
+        const date = dateInput.value;
+        timeSelect.disabled = true;
+        timeSelect.innerHTML = '<option>טוען שעות...</option>';
+
+        try {
+            const allSlots = [
+                "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", 
+                "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", 
+                "19:30", "20:00", "20:30"
+            ];
+            
+            const response = await fetch(`/appointments/busy/${date}`);
+            const data = await response.json();
+
+            timeSelect.innerHTML = '';
+
+            if (data.isClosed) {
+                timeSelect.innerHTML = '<option value="">המספרה סגורה ביום זה</option>';
+            } else {
+                const availableSlots = allSlots.filter(slot => !data.busyTimes.includes(slot));
+
+                if (availableSlots.length === 0) {
+                    timeSelect.innerHTML = '<option value="">אין תורים פנויים</option>';
+                } else {
+                    timeSelect.innerHTML = '<option value="">בחר שעה פנויה</option>';
+                    availableSlots.forEach(slot => {
+                        timeSelect.innerHTML += `<option value="${slot}">${slot}</option>`;
+                    });
+                    timeSelect.disabled = false;
+                }
+            }
+        } catch (e) {
+            alert('שגיאה בטעינת השעות');
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const responseMsg = document.getElementById('responseMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const formData = {
+            clientName: document.getElementById('clientName').value,
+            clientPhone: document.getElementById('clientPhone').value,
+            service: serviceSelect.value, // שליחת השירות החדש
+            date: dateInput.value,
+            time: timeSelect.value
+        };
+
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/appointments/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            responseMsg.classList.remove('d-none');
+            const alertDiv = responseMsg.querySelector('.alert');
+
+            if (response.ok) {
+                alertDiv.className = 'alert alert-success';
+                alertDiv.innerText = `התור נקבע בהצלחה ל${formData.service} בשעה ${formData.time}!`;
+                form.reset();
+                timeSelect.disabled = true;
+            } else {
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.innerText = result.error || 'שגיאה בקביעת התור';
+            }
+        } catch (error) {
+            alert('תקלה בחיבור לשרת');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>

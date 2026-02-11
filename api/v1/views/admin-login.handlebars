@@ -1,0 +1,50 @@
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh; dir: rtl;">
+    <div class="card shadow-lg border-0 p-4 text-end" style="width: 100%; max-width: 400px; border-radius: 20px; background: white;">
+        
+        <div class="text-center mb-4">
+            <div class="bg-dark d-inline-block p-3 rounded-circle mb-3" style="border: 3px solid #c5a059;">
+                <i class="bi bi-person-badge text-white fs-1"></i>
+            </div>
+            <h2 class="fw-bold" style="color: #1a1a1a;">כניסת מנהל</h2>
+            <p class="text-muted">אנא הזן סיסמה כדי לנהל את היומן</p>
+        </div>
+
+        {{#if error}}
+            <div class="alert alert-danger text-center py-2 mb-3" style="border-radius: 10px;">
+                <i class="bi bi-exclamation-triangle"></i> {{error}}
+            </div>
+        {{/if}}
+
+        <form action="/admin/login" method="POST">
+            <div class="mb-4">
+                <label class="form-label fw-bold">סיסמת גישה</label>
+                <input type="password" 
+                       name="password" 
+                       class="form-control form-control-lg text-center shadow-sm" 
+                       placeholder="••••" 
+                       required 
+                       style="border-radius: 12px; letter-spacing: 5px;">
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100 py-3 fw-bold shadow" style="background-color: #1a1a1a; border: 2px solid #c5a059; border-radius: 12px;">
+                <i class="bi bi-box-arrow-in-right me-2"></i> התחבר עכשיו
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="/" class="text-decoration-none text-muted small">
+                <i class="bi bi-house-door"></i> חזרה לדף הבית
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa; /* רקע בהיר ונעים */
+    }
+    input:focus {
+        border-color: #c5a059 !important;
+        box-shadow: 0 0 0 0.25rem rgba(197, 160, 89, 0.25) !important;
+    }
+</style>

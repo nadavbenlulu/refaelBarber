@@ -1,0 +1,105 @@
+<div class="container py-5 text-end" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right"></i> חזרה לאתר</a>
+        <h1 class="fw-bold m-0" style="color: #1a1a1a; border-right: 5px solid #c5a059; padding-right: 15px;">יומן עבודה - רפאל כהן</h1>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> ניהול חופשות וסגירות</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="/admin/toggle-day" method="POST" class="mb-4">
+                        <label class="form-label fw-bold">בחר יום לחסימה או פתיחה:</label>
+                        <input type="date" name="date" class="form-control form-control-lg mb-3" required>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #c5a059; border: none;">
+                            עדכן מצב יום
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    <h6 class="fw-bold mb-3">ימים חסומים כרגע:</h6>
+                    <div class="overflow-auto" style="max-height: 200px;">
+                        <ul class="list-group list-group-flush">
+                            {{#each availability}}
+                                {{#if isClosed}}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center text-danger fw-bold">
+                                        <span><i class="bi bi-lock-fill"></i> {{this.date}}</span>
+                                        <span class="badge bg-danger">סגור</span>
+                                    </li>
+                                {{/if}}
+                            {{else}}
+                                <li class="list-group-item text-muted text-center">אין ימים חסומים</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="fw-bold m-0"><i class="bi bi-list-stars m-1"></i> תורים מוזמנים</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="p-3">לקוח</th>
+                                    <th class="p-3">שירות</th> <th class="p-3">תאריך ושעה</th>
+                                    <th class="p-3 text-center">פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each appointments}}
+                                <tr>
+                                    <td class="p-3">
+                                        <div class="fw-bold text-dark">{{this.clientName}}</div>
+                                        <small class="text-muted">{{this.clientPhone}}</small>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2" style="font-size: 0.85rem;">
+                                            {{this.service}}
+                                        </span>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="badge bg-light text-dark border p-2 mb-1 d-block" style="width: fit-content;">
+                                            <i class="bi bi-calendar3"></i> {{this.date}}
+                                        </div>
+                                        <div class="badge bg-dark text-white p-2 d-block" style="width: fit-content;">
+                                            <i class="bi bi-clock"></i> {{this.time}}
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="https://wa.me/972{{this.clientPhone}}" target="_blank" class="btn btn-success btn-sm rounded-pill px-3" title="שלח הודעה">
+                                                <i class="bi bi-whatsapp"></i>
+                                            </a>
+                                            
+                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם סיימת את הטיפול או שברצונך למחוק את התור?')">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-trash"></i> סיום
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="4" class="text-center p-5 text-muted"> <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
+                                        אין תורים מוזמנים כרגע
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
