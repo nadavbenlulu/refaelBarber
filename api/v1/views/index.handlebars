@@ -26,7 +26,8 @@
                     </div>
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="bg-light p-2 rounded-circle"><i class="bi bi-clock text-warning fs-5"></i></div>
-                        <span class="text-dark fw-semibold">שעות פעילות: 09:00 - 21:00</span>
+                        {{!-- עדכון דינמי של שעות הפעילות בתצוגה --}}
+                        <span class="text-dark fw-semibold">שעות פעילות: {{workingHours.open}} - {{workingHours.close}}</span>
                     </div>
                 </div>
 
@@ -95,24 +96,30 @@
 <script>
     const dateInput = document.getElementById('appointmentDate');
     const timeSelect = document.getElementById('appointmentTime');
-    const serviceSelect = document.getElementById('service');
     const form = document.getElementById('appointmentForm');
 
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
 
+    // פונקציית עזר ליצירת רשימת שעות דינמית
+    function generateSlots(open, close) {
+        const slots = [];
+        let curr = new Date(`2024-01-01 ${open}`);
+        const stop = new Date(`2024-01-01 ${close}`);
+        while (curr < stop) {
+            slots.push(curr.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', hour12: false }));
+            curr.setMinutes(curr.getMinutes() + 30);
+        }
+        return slots;
+    }
+
     dateInput.addEventListener('change', async () => {
         const date = dateInput.value;
         timeSelect.disabled = true;
         timeSelect.innerHTML = '<option>טוען שעות...</option>';
-//
+
         try {
-            const allSlots = [
-                "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", 
-                "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", 
-                "19:30", "20:00", "20:30"
-            ];
-            
+            // מושך מהשרת גם את התורים התפוסים וגם את שעות הפעילות המעודכנות
             const response = await fetch(`/appointments/busy/${date}`);
             const data = await response.json();
 
@@ -121,6 +128,11 @@
             if (data.isClosed) {
                 timeSelect.innerHTML = '<option value="">המספרה סגורה ביום זה</option>';
             } else {
+                // יוצר שעות לפי מה שהוגדר באדמין (או ברירת מחדל)
+                const openTime = data.workingHours?.open || "09:00";
+                const closeTime = data.workingHours?.close || "21:00";
+                const allSlots = generateSlots(openTime, closeTime);
+
                 const availableSlots = allSlots.filter(slot => !data.busyTimes.includes(slot));
 
                 if (availableSlots.length === 0) {
@@ -138,6 +150,7 @@
         }
     });
 
+    // ... (שאר קוד ה-Submit נשאר זהה) ...
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const responseMsg = document.getElementById('responseMsg');
@@ -146,7 +159,7 @@
         const formData = {
             clientName: document.getElementById('clientName').value,
             clientPhone: document.getElementById('clientPhone').value,
-            service: serviceSelect.value, // שליחת השירות החדש
+            service: document.getElementById('service').value,
             date: dateInput.value,
             time: timeSelect.value
         };
@@ -166,9 +179,11 @@
 
             if (response.ok) {
                 alertDiv.className = 'alert alert-success';
-                alertDiv.innerText = `התור נקבע בהצלחה ל${formData.service} בשעה ${formData.time}!`;
+                alertDiv.innerText = `התור נקבע בהצלחה! מעביר אותך לאישור בוואטסאפ...`;
+                const message = `היי רפאל, אני ${formData.clientName}. קבעתי תור ל${formData.service} בתאריך ${formData.date} בשעה ${formData.time}. אשמח לאישור!`;
+                const whatsappUrl = `https://wa.me/972506764652?text=${encodeURIComponent(message)}`;
                 form.reset();
-                timeSelect.disabled = true;
+                setTimeout(() => { window.location.href = whatsappUrl; }, 1500);
             } else {
                 alertDiv.className = 'alert alert-danger';
                 alertDiv.innerText = result.error || 'שגיאה בקביעת התור';

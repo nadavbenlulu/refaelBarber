@@ -5,63 +5,75 @@
     </div>
 
     <div class="row g-4">
+        {{!-- עמודה ימנית: ניהול זמנים --}}
         <div class="col-lg-4">
+            
+            {{!-- הגדרת שעות פעילות קבועות --}}
             <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
-                <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
-                    <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> ניהול חופשות וסגירות</h5>
+                <div class="card-header bg-secondary text-white p-3" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="fw-bold m-0"><i class="bi bi-clock m-1"></i> שעות פעילות קבועות</h5>
                 </div>
                 <div class="card-body p-4">
+                    <form action="/admin/update-working-hours" method="POST">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label fw-bold small">שעת פתיחה:</label>
+                                <input type="time" name="openTime" value="{{workingHours.open}}" class="form-control" required>
+                            </div>
+                            <div class="col">
+                                <label class="form-label fw-bold small">שעת סגירה:</label>
+                                <input type="time" name="closeTime" value="{{workingHours.close}}" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 fw-bold btn-sm">עדכן שעות קבועות</button>
+                    </form>
+                    <div class="mt-2 small text-muted text-center">
+                        * השעות שיופיעו ללקוחות בבחירת תור
+                    </div>
+                </div>
+            </div>
+
+            {{!-- חסימת טווח שעות או יום שלם --}}
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="fw-bold m-0"><i class="bi bi-calendar-x m-1"></i> חסימת זמנים (חופשות/הפסקות)</h5>
+                </div>
+                <div class="card-body p-4">
+                    {{!-- חסימת יום שלם --}}
                     <form action="/admin/toggle-day" method="POST" class="mb-4">
-                        <label class="form-label fw-bold">חסימת/פתיחת יום שלם:</label>
-                        <input type="date" name="date" class="form-control mb-2" required>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #c5a059; border: none;">
-                            עדכן מצב יום
-                        </button>
+                        <label class="form-label fw-bold">חסימת יום שלם:</label>
+                        <div class="input-group">
+                            <input type="date" name="date" class="form-control" required>
+                            <button type="submit" class="btn btn-primary fw-bold" style="background-color: #c5a059; border: none;">עדכן יום</button>
+                        </div>
                     </form>
                     
                     <hr>
 
-                    <form action="/admin/toggle-slot" method="POST" class="mb-2">
-                        <label class="form-label fw-bold">חסימת שעה ספציפית:</label>
+                    {{!-- חסימת טווח שעות --}}
+                    <form action="/admin/block-range" method="POST" class="mt-4">
+                        <label class="form-label fw-bold">חסימת טווח שעות:</label>
                         <input type="date" name="date" class="form-control mb-2" required>
-                        <select name="time" class="form-select mb-2" required>
-                            <option value="" selected disabled>בחר שעה...</option>
-                            <option value="09:00">09:00</option>
-                            <option value="09:30">09:30</option>
-                            <option value="10:00">10:00</option>
-                            <option value="10:30">10:30</option>
-                            <option value="11:00">11:00</option>
-                            <option value="11:30">11:30</option>
-                            <option value="12:00">12:00</option>
-                            <option value="12:30">12:30</option>
-                            <option value="13:00">13:00</option>
-                            <option value="13:30">13:30</option>
-                            <option value="14:00">14:00</option>
-                            <option value="14:30">14:30</option>
-                            <option value="15:00">15:00</option>
-                            <option value="15:30">15:30</option>
-                            <option value="16:00">16:00</option>
-                            <option value="16:30">16:30</option>
-                            <option value="17:00">17:00</option>
-                            <option value="17:30">17:30</option>
-                            <option value="18:00">18:00</option>
-                            <option value="18:30">18:30</option>
-                            <option value="19:00">19:00</option>
-                            <option value="19:30">19:30</option>
-                        </select>
-                        <button type="submit" class="btn btn-outline-dark w-100 fw-bold">
-                            חסום/פתח שעה
-                        </button>
+                        <div class="row g-2 mb-3">
+                            <div class="col">
+                                <input type="time" name="startTime" class="form-control" title="משעה" required>
+                            </div>
+                            <div class="col">
+                                <input type="time" name="endTime" class="form-control" title="עד שעה" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-dark w-100 fw-bold">חסום טווח שעות</button>
                     </form>
                 </div>
             </div>
 
+            {{!-- חסימות פעילות --}}
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                <div class="card-header bg-secondary text-white p-3" style="border-radius: 15px 15px 0 0;">
-                    <h6 class="fw-bold m-0">חסימות פעילות:</h6>
+                <div class="card-header bg-light p-3" style="border-radius: 15px 15px 0 0;">
+                    <h6 class="fw-bold m-0 text-dark">חסימות פעילות:</h6>
                 </div>
                 <div class="card-body p-0">
-                    <div class="overflow-auto" style="max-height: 300px;">
+                    <div class="overflow-auto" style="max-height: 250px;">
                         <ul class="list-group list-group-flush">
                             {{#each availability}}
                                 <li class="list-group-item p-3">
@@ -74,9 +86,7 @@
                                     {{#if this.closedSlots}}
                                         <div class="d-flex flex-wrap gap-1 mt-2">
                                             {{#each this.closedSlots}}
-                                                <span class="badge bg-light text-dark border">
-                                                    <i class="bi bi-clock"></i> {{this}}
-                                                </span>
+                                                <span class="badge bg-light text-dark border small">{{this}}</span>
                                             {{/each}}
                                         </div>
                                     {{/if}}
@@ -90,6 +100,7 @@
             </div>
         </div>
 
+        {{!-- עמודה שמאלית: ניהול תורים --}}
         <div class="col-lg-8">
             <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
                 <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
@@ -114,7 +125,7 @@
                                         <small class="text-muted">{{this.clientPhone}}</small>
                                     </td>
                                     <td class="p-3">
-                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2" style="font-size: 0.85rem;">
+                                        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
                                             {{this.service}}
                                         </span>
                                     </td>
@@ -130,16 +141,15 @@
                                         <div class="d-flex flex-column gap-2">
                                             <div class="d-flex gap-2 justify-content-center">
                                                 <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'approve')" 
-                                                        class="btn btn-success btn-sm rounded-pill px-3" title="שלח אישור">
+                                                        class="btn btn-success btn-sm rounded-pill px-3">
                                                     <i class="bi bi-whatsapp"></i> אישור
                                                 </button>
                                                 <button onclick="sendWhatsApp('{{this.clientPhone}}', '{{this.clientName}}', '{{this.service}}', '{{this.date}}', '{{this.time}}', 'cancel')" 
-                                                        class="btn btn-outline-danger btn-sm rounded-pill px-3" title="שלח הודעת ביטול">
-                                                    <i class="bi bi-x-circle"></i> הודעת ביטול
+                                                        class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-x-circle"></i> ביטול
                                                 </button>
                                             </div>
-
-                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם סיימת את הטיפול או שברצונך למחוק את התור מהיומן?')">
+                                            <form action="/admin/delete-appointment/{{this._id}}" method="POST" onsubmit="return confirm('האם למחוק סופית את התור?')">
                                                 <button type="submit" class="btn btn-dark btn-sm rounded-pill w-100">
                                                     <i class="bi bi-trash"></i> סיום ומחיקה
                                                 </button>
@@ -149,10 +159,7 @@
                                 </tr>
                                 {{else}}
                                 <tr>
-                                    <td colspan="4" class="text-center p-5 text-muted"> 
-                                        <i class="bi bi-calendar2-x fs-1 d-block mb-3"></i>
-                                        אין תורים מוזמנים כרגע
-                                    </td>
+                                    <td colspan="4" class="text-center p-5 text-muted">אין תורים מוזמנים</td>
                                 </tr>
                                 {{/each}}
                             </tbody>
@@ -168,16 +175,10 @@
     function sendWhatsApp(phone, name, service, date, time, type) {
         const cleanPhone = phone.replace(/\D/g, '');
         const finalPhone = cleanPhone.startsWith('0') ? '972' + cleanPhone.substring(1) : cleanPhone;
+        let message = type === 'approve' 
+            ? `היי ${name}, זה רפאל כהן. אני מאשר את התור שלך ל${service} בתאריך ${date} בשעה ${time}. נתראה!`
+            : `היי ${name}, זה רפאל כהן. לצערי אני נאלץ לבטל את התור ל${service} בתאריך ${date} בשעה ${time}. אשמח שנתאם מועד חדש, סליחה.`;
         
-        let message = "";
-        
-        if (type === 'approve') {
-            message = `היי ${name}, זה רפאל כהן. אני מאשר את התור שלך ל${service} בתאריך ${date} בשעה ${time}. נתראה!`;
-        } else if (type === 'cancel') {
-            message = `היי ${name}, זה רפאל כהן. לצערי אני נאלץ לבטל את התור ל${service} בתאריך ${date} בשעה ${time}. אשמח שנתאם מועד חדש, סליחה על אי הנוחות.`;
-        }
-        
-        const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
+        window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
 </script>

@@ -3,6 +3,9 @@ const router = express.Router();
 const Appointment = require('../models/Appointment');
 const Availability = require('../models/Availability');
 
+// --- משתנה גלובלי זמני לשעות פעילות (מומלץ בעתיד להעביר למסד נתונים) ---
+let globalWorkingHours = { open: "09:00", close: "20:00" };
+
 // --- שלב 1: אבטחה והתחברות ---
 
 const isAdmin = (req, res, next) => {
@@ -39,10 +42,8 @@ router.get('/logout', (req, res) => {
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
         const appointments = await Appointment.find().sort({ date: 1, time: 1 }).lean() || [];
-        
         let availability = [];
         try {
-            // מושך את כל הגדרות הזמינות (גם ימים סגורים וגם שעות חסומות)
             availability = await Availability.find().sort({ date: 1 }).lean() || [];
         } catch (e) {
             console.log("Availability table issue:", e);
@@ -51,11 +52,60 @@ router.get('/dashboard', isAdmin, async (req, res) => {
         res.render('admin-dashboard', { 
             appointments, 
             availability,
+            workingHours: globalWorkingHours, // שליחת שעות הפעילות לדף
             layout: 'main'
         });
     } catch (err) {
         console.error("Dashboard Error:", err);
         res.status(500).send('שגיאת שרת בטעינת הנתונים');
+    }
+});
+
+// עדכון שעות פתיחה וסגירה קבועות
+router.post('/update-working-hours', isAdmin, (req, res) => {
+    const { openTime, closeTime } = req.body;
+    if (openTime && closeTime) {
+        globalWorkingHours.open = openTime;
+        globalWorkingHours.close = closeTime;
+    }
+    res.redirect('/admin/dashboard');
+});
+
+// חסימת טווח שעות (חדש!)
+router.post('/block-range', isAdmin, async (req, res) => {
+    const { date, startTime, endTime } = req.body;
+    if (!date || !startTime || !endTime) return res.status(400).send('נתונים חסרים');
+
+    try {
+        // פונקציה ליצירת חצאי שעות בטווח
+        const generateSlots = (start, end) => {
+            const slots = [];
+            let curr = new Date(`2024-01-01 ${start}`);
+            const stop = new Date(`2024-01-01 ${end}`);
+            
+            while (curr < stop) {
+                slots.push(curr.toLocaleTimeString('he-IL', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: false 
+                }));
+                curr.setMinutes(curr.getMinutes() + 30);
+            }
+            return slots;
+        };
+
+        const slotsToBlock = generateSlots(startTime, endTime);
+
+        await Availability.findOneAndUpdate(
+            { date: date },
+            { $addToSet: { closedSlots: { $each: slotsToBlock } } }, // מוסיף רק שעות שלא קיימות
+            { upsert: true }
+        );
+
+        res.redirect('/admin/dashboard');
+    } catch (err) {
+        console.error("Block Range Error:", err);
+        res.status(500).send('שגיאה בחסימת הטווח');
     }
 });
 
@@ -66,15 +116,16 @@ router.post('/toggle-day', isAdmin, async (req, res) => {
 
     try {
         const existingDay = await Availability.findOne({ date });
-
-        if (existingDay) {
-            // אם היה קיים, נמחק אותו (זה יפתח גם את היום וגם ינקה שעות חסומות ביום זה)
+        if (existingDay && existingDay.isClosed) {
             await Availability.deleteOne({ date });
         } else {
-            // אם לא קיים, נחסום את כל היום
-            await Availability.create({ date, isClosed: true, closedSlots: [] });
+            // אם היה קיים רק כשעות חסומות, נעדכן אותו ליום סגור מלא
+            await Availability.findOneAndUpdate(
+                { date }, 
+                { isClosed: true, closedSlots: [] }, 
+                { upsert: true }
+            );
         }
-
         res.redirect('/admin/dashboard');
     } catch (err) {
         console.error("Toggle Day Error:", err);
@@ -82,45 +133,7 @@ router.post('/toggle-day', isAdmin, async (req, res) => {
     }
 });
 
-// חסימת או פתיחת שעה ספציפית - חדש!
-router.post('/toggle-slot', isAdmin, async (req, res) => {
-    const { date, time } = req.body;
-    if (!date || !time) return res.status(400).send('נתונים חסרים');
-
-    try {
-        let day = await Availability.findOne({ date });
-
-        if (day) {
-            // אם השעה כבר חסומה - נסיר אותה מהרשימה
-            if (day.closedSlots.includes(time)) {
-                day.closedSlots = day.closedSlots.filter(slot => slot !== time);
-            } else {
-                // אם השעה לא חסומה - נוסיף אותה
-                day.closedSlots.push(time);
-            }
-            
-            // אם היום לא סגור לגמרי וגם אין יותר שעות חסומות, אפשר למחוק את הרשומה
-            if (!day.isClosed && day.closedSlots.length === 0) {
-                await Availability.deleteOne({ _id: day._id });
-            } else {
-                await day.save();
-            }
-        } else {
-            // אם היום לא קיים בטבלה, ניצור רשומה חדשה עם השעה החסומה
-            await Availability.create({ 
-                date, 
-                isClosed: false, 
-                closedSlots: [time] 
-            });
-        }
-
-        res.redirect('/admin/dashboard');
-    } catch (err) {
-        console.error("Toggle Slot Error:", err);
-        res.status(500).send('שגיאה בעדכון השעה');
-    }
-});
-
+// מחיקת תור (סיום טיפול)
 router.post('/delete-appointment/:id', isAdmin, async (req, res) => {
     try {
         const { id } = req.params;
