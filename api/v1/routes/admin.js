@@ -3,9 +3,6 @@ const router = express.Router();
 const Appointment = require('../models/Appointment');
 const Availability = require('../models/Availability');
 
-// --- משתנה גלובלי זמני לשעות פעילות (מומלץ בעתיד להעביר למסד נתונים) ---
-let globalWorkingHours = { open: "09:00", close: "20:00" };
-
 // --- שלב 1: אבטחה והתחברות ---
 
 const isAdmin = (req, res, next) => {
@@ -42,17 +39,18 @@ router.get('/logout', (req, res) => {
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
         const appointments = await Appointment.find().sort({ date: 1, time: 1 }).lean() || [];
-        let availability = [];
-        try {
-            availability = await Availability.find().sort({ date: 1 }).lean() || [];
-        } catch (e) {
-            console.log("Availability table issue:", e);
-        }
+        
+        // מושך את כל החסימות (מתעלם מרשומת ההגדרות)
+        let availability = await Availability.find({ isSettings: { $ne: true } }).sort({ date: 1 }).lean() || [];
+        
+        // מושך את הגדרות שעות הפעילות מה-DB (אם אין, שם ברירת מחדל)
+        const settings = await Availability.findOne({ isSettings: true }).lean();
+        const workingHours = settings ? settings.workingHours : { open: "09:00", close: "20:00" };
 
         res.render('admin-dashboard', { 
             appointments, 
             availability,
-            workingHours: globalWorkingHours, // שליחת שעות הפעילות לדף
+            workingHours, // שעות הפעילות שנשמרו ב-DB
             layout: 'main'
         });
     } catch (err) {
@@ -61,28 +59,32 @@ router.get('/dashboard', isAdmin, async (req, res) => {
     }
 });
 
-// עדכון שעות פתיחה וסגירה קבועות
-router.post('/update-working-hours', isAdmin, (req, res) => {
+// עדכון שעות פתיחה וסגירה קבועות (שומר ב-DB במקום ב-let)
+router.post('/update-working-hours', isAdmin, async (req, res) => {
     const { openTime, closeTime } = req.body;
-    if (openTime && closeTime) {
-        globalWorkingHours.open = openTime;
-        globalWorkingHours.close = closeTime;
+    try {
+        await Availability.findOneAndUpdate(
+            { isSettings: true }, 
+            { workingHours: { open: openTime, close: closeTime } }, 
+            { upsert: true }
+        );
+        res.redirect('/admin/dashboard');
+    } catch (err) {
+        console.error("Update Hours Error:", err);
+        res.status(500).send("שגיאה בעדכון השעות");
     }
-    res.redirect('/admin/dashboard');
 });
 
-// חסימת טווח שעות (חדש!)
+// חסימת טווח שעות
 router.post('/block-range', isAdmin, async (req, res) => {
     const { date, startTime, endTime } = req.body;
     if (!date || !startTime || !endTime) return res.status(400).send('נתונים חסרים');
 
     try {
-        // פונקציה ליצירת חצאי שעות בטווח
         const generateSlots = (start, end) => {
             const slots = [];
             let curr = new Date(`2024-01-01 ${start}`);
             const stop = new Date(`2024-01-01 ${end}`);
-            
             while (curr < stop) {
                 slots.push(curr.toLocaleTimeString('he-IL', { 
                     hour: '2-digit', 
@@ -97,8 +99,8 @@ router.post('/block-range', isAdmin, async (req, res) => {
         const slotsToBlock = generateSlots(startTime, endTime);
 
         await Availability.findOneAndUpdate(
-            { date: date },
-            { $addToSet: { closedSlots: { $each: slotsToBlock } } }, // מוסיף רק שעות שלא קיימות
+            { date: date, isSettings: { $ne: true } },
+            { $addToSet: { closedSlots: { $each: slotsToBlock } } },
             { upsert: true }
         );
 
@@ -112,35 +114,29 @@ router.post('/block-range', isAdmin, async (req, res) => {
 // חסימת או פתיחת יום עבודה מלא
 router.post('/toggle-day', isAdmin, async (req, res) => {
     const { date } = req.body;
-    if (!date) return res.status(400).send('תאריך חסר');
-
     try {
-        const existingDay = await Availability.findOne({ date });
+        const existingDay = await Availability.findOne({ date, isSettings: { $ne: true } });
         if (existingDay && existingDay.isClosed) {
-            await Availability.deleteOne({ date });
+            await Availability.deleteOne({ date, isSettings: { $ne: true } });
         } else {
-            // אם היה קיים רק כשעות חסומות, נעדכן אותו ליום סגור מלא
             await Availability.findOneAndUpdate(
-                { date }, 
+                { date, isSettings: { $ne: true } }, 
                 { isClosed: true, closedSlots: [] }, 
                 { upsert: true }
             );
         }
         res.redirect('/admin/dashboard');
     } catch (err) {
-        console.error("Toggle Day Error:", err);
         res.status(500).send('שגיאה בעדכון הזמינות');
     }
 });
 
-// מחיקת תור (סיום טיפול)
+// מחיקת תור
 router.post('/delete-appointment/:id', isAdmin, async (req, res) => {
     try {
-        const { id } = req.params;
-        await Appointment.findByIdAndDelete(id);
+        await Appointment.findByIdAndDelete(req.params.id);
         res.redirect('/admin/dashboard');
     } catch (err) {
-        console.error(err);
         res.status(500).send('שגיאה במחיקת התור');
     }
 });
