@@ -40,16 +40,26 @@ router.get('/dashboard', isAdmin, async (req, res) => {
     try {
         const appointments = await Appointment.find().sort({ date: 1, time: 1 }).lean() || [];
         
-        // מושך את כל החסימות (מתעלם מרשומת ההגדרות)
-        let availability = await Availability.find({ isSettings: { $ne: true } }).sort({ date: 1 }).lean() || [];
+        // שליפת חסימות - מחפש כל מה שאינו הגדרות (isSettings לא true)
+        const availabilityData = await Availability.find({ isSettings: { $ne: true } }).sort({ date: 1 }).lean();
         
-        // מושך את הגדרות שעות הפעילות מה-DB
+        // עיבוד הנתונים לתצוגה חלקה ב-Handlebars
+        const availability = availabilityData.map(item => ({
+            _id: item._id,
+            date: item.date,
+            isClosed: item.isClosed || false,
+            closedSlots: item.closedSlots || []
+        }));
+
+        console.log("Found Availabilities to display:", availability.length);
+
+        // מושך את הגדרות שעות הפעילות
         const settings = await Availability.findOne({ isSettings: true }).lean();
         const workingHours = settings ? settings.workingHours : { open: "09:00", close: "20:00" };
 
         res.render('admin-dashboard', { 
             appointments, 
-            availability,
+            availability, 
             workingHours, 
             layout: 'main'
         });
@@ -59,7 +69,7 @@ router.get('/dashboard', isAdmin, async (req, res) => {
     }
 });
 
-// אישור תור - משנה סטטוס ל-confirmed
+// אישור תור
 router.post('/confirm-appointment/:id', isAdmin, async (req, res) => {
     try {
         await Appointment.findByIdAndUpdate(req.params.id, { status: 'confirmed' });
@@ -76,8 +86,8 @@ router.post('/update-working-hours', isAdmin, async (req, res) => {
     try {
         await Availability.findOneAndUpdate(
             { isSettings: true }, 
-            { workingHours: { open: openTime, close: closeTime } }, 
-            { upsert: true }
+            { workingHours: { open: openTime, close: closeTime }, isSettings: true }, 
+            { upsert: true, new: true }
         );
         res.redirect('/admin/dashboard');
     } catch (err) {
@@ -109,10 +119,14 @@ router.post('/block-range', isAdmin, async (req, res) => {
 
         const slotsToBlock = generateSlots(startTime, endTime);
 
+        // עדכון/יצירה של חסימה עם הגדרה מפורשת שזה לא רשומת הגדרות
         await Availability.findOneAndUpdate(
             { date: date, isSettings: { $ne: true } },
-            { $addToSet: { closedSlots: { $each: slotsToBlock } } },
-            { upsert: true }
+            { 
+                $addToSet: { closedSlots: { $each: slotsToBlock } },
+                $set: { isSettings: false } // מבטיח שזה יופיע ברשימה
+            },
+            { upsert: true, new: true }
         );
 
         res.redirect('/admin/dashboard');
@@ -127,22 +141,26 @@ router.post('/toggle-day', isAdmin, async (req, res) => {
     const { date } = req.body;
     try {
         const existingDay = await Availability.findOne({ date, isSettings: { $ne: true } });
+        
         if (existingDay && existingDay.isClosed) {
-            await Availability.deleteOne({ date, isSettings: { $ne: true } });
+            // אם היום כבר סגור - פותחים אותו (מוחקים את החסימה)
+            await Availability.deleteOne({ _id: existingDay._id });
         } else {
+            // אם לא סגור - סוגרים אותו
             await Availability.findOneAndUpdate(
                 { date, isSettings: { $ne: true } }, 
-                { isClosed: true, closedSlots: [] }, 
-                { upsert: true }
+                { isClosed: true, closedSlots: [], isSettings: false }, 
+                { upsert: true, new: true }
             );
         }
         res.redirect('/admin/dashboard');
     } catch (err) {
+        console.error("Toggle Day Error:", err);
         res.status(500).send('שגיאה בעדכון הזמינות');
     }
 });
 
-// מחיקת חסימה (פתיחת יום/שעות מחדש) - חדש!
+// מחיקת חסימה (כפתור הפח ברשימה)
 router.post('/delete-availability/:id', isAdmin, async (req, res) => {
     try {
         await Availability.findByIdAndDelete(req.params.id);
