@@ -8,18 +8,18 @@ const Availability = require('../models/Availability');
 // Middleware שבודק אם המנהל מחובר
 const isAdmin = (req, res, next) => {
     if (req.session && req.session.isLoggedIn) {
-        next(); // המנהל מחובר, המשך הלאה
+        next();
     } else {
-        res.redirect('/admin/login'); // לא מחובר? לך לדף התחברות
+        res.redirect('/admin/login');
     }
 };
 
-// דף ההתחברות (יוצג כשנבנה את שלב 2)
+// דף ההתחברות
 router.get('/login', (req, res) => {
     res.render('admin-login', { layout: 'main' });
 });
 
-// בדיקת הסיסמה של רפאל
+// בדיקת הסיסמה
 router.post('/login', (req, res) => {
     const { password } = req.body;
     const ADMIN_PASSWORD = "1234"; // רפאל, כאן תשנה לסיסמה שאתה רוצה
@@ -38,21 +38,35 @@ router.get('/logout', (req, res) => {
     res.redirect('/admin/login');
 });
 
-// --- שלב 2: ניהול היומן (מוגן עכשיו ב-isAdmin) ---
+// --- שלב 2: ניהול היומן ---
 
-// דף הניהול הראשי - רק למנהל מחובר
+// דף הניהול הראשי - מתוקן
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
-        const appointments = await Appointment.find().sort({ date: 1, time: 1 });
-        const availability = await Availability.find();
-        res.render('admin-dashboard', { appointments, availability });
+        // משיכת תורים - אם אין תורים מחזיר מערך ריק []
+        const appointments = await Appointment.find().sort({ date: 1, time: 1 }) || [];
+        
+        // משיכת זמינות - הגנה למקרה שהטבלה לא קיימת
+        let availability = [];
+        try {
+            availability = await Availability.find() || [];
+        } catch (e) {
+            console.log("Availability table empty or not found");
+        }
+
+        res.render('admin-dashboard', { 
+            appointments, 
+            availability,
+            layout: 'main' // וודא שזה השם של ה-layout שלך
+        });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('שגיאת שרת בטעינת הדאשבורד');
+        console.error("Dashboard Error:", err);
+        // במקום לשלוח שגיאה 500, נציג דף ריק עם הודעה
+        res.status(500).send('שגיאת שרת: וודא שכל המודלים מוגדרים נכון ב-Database');
     }
 });
 
-// חסימת או פתיחת יום עבודה (מוגן)
+// חסימת או פתיחת יום עבודה
 router.post('/toggle-day', isAdmin, async (req, res) => {
     const { date } = req.body;
     if (!date) return res.status(400).send('תאריך חסר');
@@ -72,7 +86,7 @@ router.post('/toggle-day', isAdmin, async (req, res) => {
     }
 });
 
-// מחיקת תור (מוגן)
+// מחיקת תור
 router.post('/delete-appointment/:id', isAdmin, async (req, res) => {
     try {
         const { id } = req.params;
