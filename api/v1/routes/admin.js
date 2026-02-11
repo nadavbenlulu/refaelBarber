@@ -38,13 +38,12 @@ router.get('/logout', (req, res) => {
 
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
-        // שליפת תורים כולל השדה status
         const appointments = await Appointment.find().sort({ date: 1, time: 1 }).lean() || [];
         
         // מושך את כל החסימות (מתעלם מרשומת ההגדרות)
         let availability = await Availability.find({ isSettings: { $ne: true } }).sort({ date: 1 }).lean() || [];
         
-        // מושך את הגדרות שעות הפעילות מה-DB (אם אין, שם ברירת מחדל)
+        // מושך את הגדרות שעות הפעילות מה-DB
         const settings = await Availability.findOne({ isSettings: true }).lean();
         const workingHours = settings ? settings.workingHours : { open: "09:00", close: "20:00" };
 
@@ -60,7 +59,7 @@ router.get('/dashboard', isAdmin, async (req, res) => {
     }
 });
 
-// אישור תור (חדש!) - משנה סטטוס ל-confirmed
+// אישור תור - משנה סטטוס ל-confirmed
 router.post('/confirm-appointment/:id', isAdmin, async (req, res) => {
     try {
         await Appointment.findByIdAndUpdate(req.params.id, { status: 'confirmed' });
@@ -140,6 +139,17 @@ router.post('/toggle-day', isAdmin, async (req, res) => {
         res.redirect('/admin/dashboard');
     } catch (err) {
         res.status(500).send('שגיאה בעדכון הזמינות');
+    }
+});
+
+// מחיקת חסימה (פתיחת יום/שעות מחדש) - חדש!
+router.post('/delete-availability/:id', isAdmin, async (req, res) => {
+    try {
+        await Availability.findByIdAndDelete(req.params.id);
+        res.redirect('/admin/dashboard');
+    } catch (err) {
+        console.error("Delete Availability Error:", err);
+        res.status(500).send("שגיאה במחיקת החסימה");
     }
 });
 
