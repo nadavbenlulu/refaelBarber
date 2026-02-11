@@ -3,65 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>רפאל כהן - הזמנת תור</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-      :root { --barber-gold: #c5a059; }
-      body { background-color: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
-      
-      /* ה-Navbar שביקשת */
-      .navbar {
-        background-color: #000 !important;
-        padding: 15px 0;
-        border-bottom: 3px solid var(--barber-gold);
-      }
-      .navbar-brand {
-        color: white !important;
-        font-weight: bold;
-        font-size: 1.5rem;
-        width: 100%;
-        text-align: center;
-      }
-
-      /* כפתור וואטסאפ צף */
-      #whatsapp-bubble {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background-color: #25d366;
-        color: white;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        z-index: 1000;
-        text-decoration: none;
-      }
+      body { background-color: #f0f2f5; }
+      .navbar { background-color: #1a1a1a !important; border-bottom: 3px solid #c5a059; padding: 20px 0; }
+      .navbar-brand { color: white !important; font-weight: bold; font-size: 1.8rem; width: 100%; text-align: center; }
+      #whatsapp-bubble { position: fixed; bottom: 30px; left: 30px; background-color: #25d366; color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; text-decoration: none; }
     </style>
   </head>
   <body>
-
-  <nav class="navbar">
-    <div class="container">
-      <div class="navbar-brand">
-        REFAEL COHEN <i class="bi bi-scissors" style="color: var(--barber-gold);"></i>
-      </div>
-    </div>
-  </nav>
-
-  <main class="container py-4">
-      {{{body}}}
-  </main>
-
-  <a href="https://wa.me/972506764652" target="_blank" id="whatsapp-bubble">
-      <i class="bi bi-whatsapp"></i>
-  </a>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <nav class="navbar"><div class="navbar-brand">REFAEL COHEN <i class="bi bi-scissors" style="color: #c5a059;"></i></div></nav>
+    <main class="container">{{{body}}}</main>
+    <a href="https://wa.me/972506764652" target="_blank" id="whatsapp-bubble"><i class="bi bi-whatsapp"></i></a>
   </body>
 </html>
